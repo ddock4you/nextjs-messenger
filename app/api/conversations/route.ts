@@ -2,7 +2,8 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prismadb";
 
-const POST = async (request: Request) => {
+// export async function POST (request: Request) {
+export const POST = async (request: Request) => {
   try {
     const currentUser = await getCurrentUser();
     const body = await request.json();
@@ -58,6 +59,30 @@ const POST = async (request: Request) => {
       }
     });
 
+    const singleConversation = existingConversations[0];
+    
+    if (singleConversation) {
+      return NextResponse.json(singleConversation);
+    }
+
+    const newConversation = await prisma.conversation.create({
+      data: {
+        users: {
+          connect: [
+            {
+              id: currentUser.id
+            },
+            {
+              id: userId
+            }
+          ]
+        }
+      },
+      include: {
+        users: true
+      }
+    });
+    return NextResponse.json((newConversation));
   } catch (error: any) {
     return new NextResponse('Internal Error', {status: 500})
   }

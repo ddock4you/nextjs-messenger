@@ -38,11 +38,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
             <MdOutlineGroupAdd size={20} />
           </div>
         </div>
-        {items.map(item => (
+        {items.map((item) => (
           <ConversationBox
-            key={items.id}
-            data={items}
-            selected={conversationId === items.id}
+            key={item.id}
+            data={item}
+            selected={conversationId === item.id}
           />
         ))}
       </div>

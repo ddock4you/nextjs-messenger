@@ -60,12 +60,34 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
     <div
       onClick={handleClick}
       className={clsx(
-        `relative flex w-full cursor-pointer items-center space-x-3 rounded-lg transition
-        hover:bg-neutral-100`,
+        `relative flex w-full cursor-pointer items-center space-x-3 rounded-lg p-3
+        transition hover:bg-neutral-100`,
         selected ? "bg-neutral-100" : "bg-white",
       )}
     >
       <Avatar user={otherUser} />
+      <div className="min-w-0 flex-1">
+        <div className="focus:outline-none">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-md font-medium text-gray-900">
+              {data.name || otherUser.name}
+            </p>
+            {lastMessage?.createAt && (
+              <p className="text-xs font-light text-gray-400">
+                {format(new Date(lastMessage.createAt), "p")}
+              </p>
+            )}
+          </div>
+          <p
+            className={clsx(
+              "truncate text-sm",
+              hasSeen ? "text-gray-500" : "font-medium text-black",
+            )}
+          >
+            {lastMessageText}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { Fragment, useMemo, useState } from "react";
 import { IoClose, IoTrash } from "react-icons/io5";
 import ConfirmModal from "./ConfirmModal";
+import AvatarGroup from "@/app/components/AvatarGroup";
 
 interface ProfileDrawerProps {
   isOpen: boolean;
@@ -41,7 +42,6 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
 
     return "Active";
   }, [data]);
-
   return (
     <>
       <ConfirmModal
@@ -119,14 +119,17 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                             <dl className="space-y-8 px-4 sm:space-y-6 sm:px-6">
                               {data.isGroup && (
                                 <div>
-                                  <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
+                                  <dt className="mb-4 text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
                                     Emails
                                   </dt>
-                                  <dd className="mt-1 text-sm text-gray-900 sm:col-span-2">
-                                    {data.users
-                                      .map((user) => user.email)
-                                      .join(", ")}
-                                  </dd>
+                                  {data.users.map((user) => (
+                                    <dd
+                                      key={user.email}
+                                      className="mt-1 text-sm text-gray-900 sm:col-span-2"
+                                    >
+                                      {user.email}
+                                    </dd>
+                                  ))}
                                 </div>
                               )}
                               {!data.isGroup && (

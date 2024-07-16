@@ -1,22 +1,21 @@
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prismadb";
+import { pusherServer } from "@/app/libs/pusher";
 
 // export async function POST (request: Request) {
 export const POST = async (request: Request) => {
   try {
     const currentUser = await getCurrentUser();
     const body = await request.json();
-    const {
-      userId, isGroup, members, name
-    } = body;
+    const { userId, isGroup, members, name } = body;
 
     if (!currentUser?.id || !currentUser?.email) {
-      return new NextResponse('Unauthorized', {status: 401});
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
     if (isGroup && (!members || members.length < 2 || !name)) {
-      return new NextResponse('Invalid data', {status: 400});
+      return new NextResponse("Invalid data", { status: 400 });
     }
 
     if (isGroup) {
@@ -26,19 +25,26 @@ export const POST = async (request: Request) => {
           isGroup,
           users: {
             connect: [
-              ...members.map((member: {value: string}) => ({
-                id: member.value
+              ...members.map((member: { value: string }) => ({
+                id: member.value,
               })),
               {
-                id: currentUser.id
-              }
-            ]
-          }
+                id: currentUser.id,
+              },
+            ],
+          },
         },
         include: {
-          users: true
+          users: true,
+        },
+      });
+
+      newConversation.users.forEach((user) => {
+        if (user.email) {
+          pusherServer.trigger(user.email, "conversation:new", newConversation);
         }
-      })
+      });
+
       return NextResponse.json(newConversation);
     }
 
@@ -47,20 +53,20 @@ export const POST = async (request: Request) => {
         OR: [
           {
             userIds: {
-              equals: [currentUser.id, userId]
-            }
+              equals: [currentUser.id, userId],
+            },
           },
           {
             userIds: {
-              equals: [userId, currentUser.id]
-            }
-          }
-        ]
-      }
+              equals: [userId, currentUser.id],
+            },
+          },
+        ],
+      },
     });
 
     const singleConversation = existingConversations[0];
-    
+
     if (singleConversation) {
       return NextResponse.json(singleConversation);
     }
@@ -70,20 +76,27 @@ export const POST = async (request: Request) => {
         users: {
           connect: [
             {
-              id: currentUser.id
+              id: currentUser.id,
             },
             {
-              id: userId
-            }
-          ]
-        }
+              id: userId,
+            },
+          ],
+        },
       },
       include: {
-        users: true
+        users: true,
+      },
+    });
+
+    newConversation.users.map((user) => {
+      if (user.email) {
+        pusherServer.trigger(user.email, "conversation:new", newConversation);
       }
     });
-    return NextResponse.json((newConversation));
+
+    return NextResponse.json(newConversation);
   } catch (error: any) {
-    return new NextResponse('Internal Error', {status: 500})
+    return new NextResponse("Internal Error", { status: 500 });
   }
-}
+};
